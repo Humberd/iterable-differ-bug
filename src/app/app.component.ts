@@ -33,28 +33,84 @@ export class AppComponent {
   ];
 
   constructor(iterableDiffers: IterableDiffers) {
+    let step1Status: RenderRow[];
+    let step2Status: RenderRow[];
+    let step3Status: RenderRow[];
+
     // @ts-ignore
     this._differs = iterableDiffers.find([]).create<RenderRow>((index, item) => {
       return item.data.id;
     });
 
     this._differs.diff(this.baseOrder);
-    console.log('---- Initial population ----');
-    this._differs.forEachOperation(console.log);
 
+    console.log('---- STEP 1: I\'m removing one element from index [1] ----');
     this._differs.diff(this.changedOrder);
-    console.log('---- Should be 1 change ----');
+    step1Status = [...this._differs.collection];
     this._differs.forEachOperation(console.log);
-    console.log('----------------------------');
+    console.log(`
++--------------------+               |       +--------------------+
+| id: abc, index: 0  |               |       | id: abc, index: 0  |
++--------------------+               |       +--------------------+
+| id: abc, index: 1  |  <-- REMOVE   |       | id: def, index: 2  |
++--------------------+               |       +--------------------+
+| id: def, index: 2  |               | =>    | id: def, index: 3  |
++--------------------+               | =>    +--------------------+
+| id: def, index: 3  |               | =>    | id: vwx, index: 4  |
++--------------------+               |       +--------------------+
+| id: vwx, index: 4  |               |       | id: xyz, index: 5  |
++--------------------+               |       +--------------------+
+| id: xyz, index: 5  |               |
++--------------------+               |
+    `);
+    console.log('\n\n\n');
 
+    console.log('---- STEP 2: I\'m readding the same element to index [1] ----');
     this._differs.diff(this.baseOrder);
-    console.log('---- Should be 1 change ----');
+    step2Status = [...this._differs.collection];
     this._differs.forEachOperation(console.log);
-    console.log('----------------------------');
+    console.log(`
++--------------------+               |       +--------------------+
+| id: abc, index: 0  |               |       | id: abc, index: 0  |
++--------------------+  <-- INSERT   |       +--------------------+
+| id: def, index: 2  |               |       | id: abc, index: 1  |
++--------------------+               |       +--------------------+
+| id: def, index: 3  |               | =>    | id: def, index: 2  |
++--------------------+               | =>    +--------------------+
+| id: vwx, index: 4  |               | =>    | id: def, index: 3  |
++--------------------+               |       +--------------------+
+| id: xyz, index: 5  |               |       | id: vwx, index: 4  |
++--------------------+               |       +--------------------+
+                                     |       | id: xyz, index: 5  |
+                                     |       +--------------------+
+    `);
+    console.log('\n\n\n');
 
+    console.log('---- STEP 3: I\'m removing that element from index [1] again (Should be the same as in STEP 1) ----');
     this._differs.diff(this.changedOrder);
-    console.log('---- Should be 1 change ----');
+    step3Status = [...this._differs.collection];
     this._differs.forEachOperation(console.log);
-    console.log('----------------------------');
+    console.log(`
++--------------------+               |       +--------------------+
+| id: abc, index: 0  |               |       | id: abc, index: 0  |
++--------------------+ <-+           |       +--------------------+
+| id: abc, index: 1  |   |<-- REMOVE |       | id: def, index: 3  |  <-- notice that the index 3 is before 2.
++--------------------+   |           |       +--------------------+
+| id: def, index: 2  |   |           | =>    | id: def, index: 2  |
++--------------------+   |           | =>    +--------------------+
+| id: def, index: 3  | --+ POSITION  | =>    | id: vwx, index: 4  |
++--------------------+      CHANGE   |       +--------------------+
+| id: vwx, index: 4  |               |       | id: xyz, index: 5  |
++--------------------+               |       +--------------------+
+| id: xyz, index: 5  |               |
++--------------------+               |
+    `);
+    console.log('The differs\' internal collection reflects the order CORRECTLY, but the operations, which Angular CDK Table uses internally tells something else.');
+    console.log('Step 1: ', step1Status);
+    console.log('Step 2: ', step2Status);
+    console.log('Step 3: ', step3Status);
+    console.log('\n\n\n');
+
+    console.log(this._differs);
   }
 }
