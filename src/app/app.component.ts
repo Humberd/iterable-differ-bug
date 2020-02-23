@@ -13,6 +13,7 @@ interface RenderRow {
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
+  logger: string[] = [];
   private _differs: DefaultIterableDiffer<RenderRow>;
 
   baseOrder: RenderRow[] = [
@@ -44,11 +45,11 @@ export class AppComponent {
 
     this._differs.diff(this.baseOrder);
 
-    console.log('---- STEP 1: I\'m removing one element from index [1] ----');
+    this.logToScreen('---- STEP 1: I\'m removing one element from index [1] ----');
     this._differs.diff(this.changedOrder);
     step1Status = [...this._differs.collection];
     this._differs.forEachOperation(console.log);
-    console.log(`
+    this.logToScreen(`
 +--------------------+               |       +--------------------+
 | id: abc, index: 0  |               |       | id: abc, index: 0  |
 +--------------------+               |       +--------------------+
@@ -65,11 +66,11 @@ export class AppComponent {
     `);
     console.log('\n\n\n');
 
-    console.log('---- STEP 2: I\'m readding the same element to index [1] ----');
+    this.logToScreen('---- STEP 2: I\'m readding the same element to index [1] ----');
     this._differs.diff(this.baseOrder);
     step2Status = [...this._differs.collection];
     this._differs.forEachOperation(console.log);
-    console.log(`
+    this.logToScreen(`
 +--------------------+               |       +--------------------+
 | id: abc, index: 0  |               |       | id: abc, index: 0  |
 +--------------------+  <-- INSERT   |       +--------------------+
@@ -86,11 +87,11 @@ export class AppComponent {
     `);
     console.log('\n\n\n');
 
-    console.log('---- STEP 3: I\'m removing that element from index [1] again (Should be the same as in STEP 1) ----');
+    this.logToScreen('---- STEP 3: I\'m removing that element from index [1] again (Should be the same as in STEP 1) ----');
     this._differs.diff(this.changedOrder);
     step3Status = [...this._differs.collection];
     this._differs.forEachOperation(console.log);
-    console.log(`
+    this.logToScreen(`
 +--------------------+               |       +--------------------+
 | id: abc, index: 0  |               |       | id: abc, index: 0  |
 +--------------------+ <-+           |       +--------------------+
@@ -105,12 +106,17 @@ export class AppComponent {
 | id: xyz, index: 5  |               |
 +--------------------+               |
     `);
-    console.log('The differs\' internal collection reflects the order CORRECTLY, but the operations, which Angular CDK Table uses internally tells something else.');
+    this.logToScreen('!!! The differs\' internal collection reflects the order CORRECTLY, but the operations, which Angular CDK Table uses internally tells something else.');
     console.log('Step 1: ', step1Status);
     console.log('Step 2: ', step2Status);
     console.log('Step 3: ', step3Status);
     console.log('\n\n\n');
 
     console.log(this._differs);
+  }
+
+  private logToScreen(message: string) {
+    this.logger.push(message);
+    console.log(message);
   }
 }
